@@ -27,7 +27,7 @@ def answer_question(query: str) -> tuple[str, str]:
         )
     
     # Generate answer using retrieval + LLM
-    result = ask(query)
+    result = generate(query)
     
     # Format answer section
     answer_text = result['answer']

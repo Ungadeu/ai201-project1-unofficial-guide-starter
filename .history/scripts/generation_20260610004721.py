@@ -15,26 +15,20 @@ from groq import Groq
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scripts.embedding_and_retrieval import retrieve
 
-SYSTEM_PROMPT = """
+PROMPT_TEMPLATE = """
 You are a helpful assistant.
 
-Answer only using the information provided in the documents. Do not use any outside knowledge.
-
-If the documents do not contain enough information to answer the question, respond exactly:
-"I don't have enough information on that."
-
-When you answer, include source citations in this exact format: [README.md, chunk 0].
-Use the source document name from the "Source" field in the context, not the context section label.
-For example: "According to [README.md, chunk 0], ..."
-Do not invent or hallucinate sources.
-"""
-
-PROMPT_TEMPLATE = """
 Context:
 {context}
 
 Question:
 {question}
+
+Answer the question using only the information in the provided documents.
+If the documents don't contain enough information to answer, say "I don't have enough information on that."
+
+For any answer you provide, include source citations in the form [source, chunk].
+If you use multiple documents, cite each one.
 """
 
 MODEL_NAME = "llama-3.3-70b-versatile"
@@ -75,9 +69,7 @@ def _format_context_for_llm(chunks: List[Dict]) -> str:
         source = chunk['source']
         chunk_idx = chunk['chunk_index']
         text = chunk['text']
-        context_parts.append(
-            f"[Context {i}]\nSource: {source}\nChunk: {chunk_idx}\nText:\n{text}\n"
-        )
+        context_parts.append(f"[Context {i}]\nSource: {source}, Chunk Index: {chunk_idx}\n{text}\n")
     
     return "\n---\n".join(context_parts)
 
@@ -226,11 +218,8 @@ def generate(query: str, chroma_db_path: str = "data/chroma_db", top_k: int = 5)
         client = Groq(api_key=groq_api_key)
         response = client.chat.completions.create(
             model=MODEL_NAME,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.0,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
             max_tokens=500
         )
         answer = response.choices[0].message.content.strip()

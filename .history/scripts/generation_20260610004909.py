@@ -23,8 +23,7 @@ Answer only using the information provided in the documents. Do not use any outs
 If the documents do not contain enough information to answer the question, respond exactly:
 "I don't have enough information on that."
 
-When you answer, include source citations in this exact format: [README.md, chunk 0].
-Use the source document name from the "Source" field in the context, not the context section label.
+When you answer, include source citations in this exact format: [source, chunk N].
 For example: "According to [README.md, chunk 0], ..."
 Do not invent or hallucinate sources.
 """
@@ -75,9 +74,7 @@ def _format_context_for_llm(chunks: List[Dict]) -> str:
         source = chunk['source']
         chunk_idx = chunk['chunk_index']
         text = chunk['text']
-        context_parts.append(
-            f"[Context {i}]\nSource: {source}\nChunk: {chunk_idx}\nText:\n{text}\n"
-        )
+        context_parts.append(f"[Context {i}]\nSource: {source}, Chunk Index: {chunk_idx}\n{text}\n")
     
     return "\n---\n".join(context_parts)
 

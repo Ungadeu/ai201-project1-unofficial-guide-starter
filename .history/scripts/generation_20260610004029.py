@@ -15,29 +15,18 @@ from groq import Groq
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scripts.embedding_and_retrieval import retrieve
 
-SYSTEM_PROMPT = """
+PROMPT_TEMPLATE = """
 You are a helpful assistant.
 
-Answer only using the information provided in the documents. Do not use any outside knowledge.
-
-If the documents do not contain enough information to answer the question, respond exactly:
-"I don't have enough information on that."
-
-When you answer, include source citations in this exact format: [README.md, chunk 0].
-Use the source document name from the "Source" field in the context, not the context section label.
-For example: "According to [README.md, chunk 0], ..."
-Do not invent or hallucinate sources.
-"""
-
-PROMPT_TEMPLATE = """
 Context:
 {context}
 
 Question:
 {question}
-"""
 
-MODEL_NAME = "llama-3.3-70b-versatile"
+Answer the question using only the information in the provided documents.
+If the documents don't contain enough information to answer, say "I don't have enough information on that."
+"""
 
 
 def _filter_low_relevance_chunks(chunks: List[Dict], max_distance: float = 0.7) -> List[Dict]:
@@ -75,9 +64,7 @@ def _format_context_for_llm(chunks: List[Dict]) -> str:
         source = chunk['source']
         chunk_idx = chunk['chunk_index']
         text = chunk['text']
-        context_parts.append(
-            f"[Context {i}]\nSource: {source}\nChunk: {chunk_idx}\nText:\n{text}\n"
-        )
+        context_parts.append(f"[Context {i}]\nSource: {source}, Chunk Index: {chunk_idx}\n{text}\n")
     
     return "\n---\n".join(context_parts)
 
@@ -148,17 +135,6 @@ def _format_source_list(chunks: List[Dict]) -> str:
     return "\n".join(source_lines)
 
 
-def _format_source_names(chunks: List[Dict]) -> str:
-    """
-    Build a short text listing the unique source documents used for the answer.
-    """
-    unique_sources = []
-    for chunk in chunks:
-        if chunk['source'] not in unique_sources:
-            unique_sources.append(chunk['source'])
-    return ", ".join(unique_sources) if unique_sources else "No sources retrieved."
-
-
 def generate(query: str, chroma_db_path: str = "data/chroma_db", top_k: int = 5) -> Dict[str, str]:
     """
     Generate a grounded answer to a user query using Groq LLM and retrieved context.
@@ -201,8 +177,8 @@ def generate(query: str, chroma_db_path: str = "data/chroma_db", top_k: int = 5)
     # Retrieve relevant chunks
     retrieved_chunks = retrieve(query, chroma_db_path, top_k=top_k)
     
-    # Filter low-relevance chunks (distance > 0.8 = weak signal)
-    high_relevance_chunks = _filter_low_relevance_chunks(retrieved_chunks, max_distance=0.8)
+    # Filter low-relevance chunks (distance > 0.7 = weak signal)
+    high_relevance_chunks = _filter_low_relevance_chunks(retrieved_chunks, max_distance=0.7)
     
     if not high_relevance_chunks:
         return {
@@ -213,24 +189,25 @@ def generate(query: str, chroma_db_path: str = "data/chroma_db", top_k: int = 5)
             ),
             "sources": "",
             "citations": {},
-            "error": "No high-relevance chunks retrieved (all distances > 0.8)"
+            "error": "No high-relevance chunks retrieved (all distances > 0.7)"
         }
     
-    # Fill in the retrieved chunk texts
-    retrieved_chunks_list = [chunk['text'] for chunk in high_relevance_chunks]
-    retrieved_chunks = "\n\n".join(retrieved_chunks_list)
-    prompt = PROMPT_TEMPLATE.format(context=retrieved_chunks, question=query)
-
+    # Format context for LLM
+    context = _format_context_for_llm(high_relevance_chunks)
+    
     # Call Groq LLM
     try:
         client = Groq(api_key=groq_api_key)
         response = client.chat.completions.create(
-            model=MODEL_NAME,
+            model="mistral-7b-instant",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": prompt}
+                {
+                    "role": "user",
+                    "content": f"Context from student reviews:\n\n{context}\n\nQuestion: {query}"
+                }
             ],
-            temperature=0.0,
+            temperature=0.3,  # Low temperature for factual, grounded responses
             max_tokens=500
         )
         answer = response.choices[0].message.content.strip()
@@ -247,9 +224,6 @@ def generate(query: str, chroma_db_path: str = "data/chroma_db", top_k: int = 5)
     
     # Format source list (programmatically constructed, not from LLM)
     sources = _format_source_list(high_relevance_chunks)
-    source_names = _format_source_names(high_relevance_chunks)
-    if source_names:
-        answer = f"{answer}\n\nSources used: {source_names}"
     
     return {
         "answer": answer,
