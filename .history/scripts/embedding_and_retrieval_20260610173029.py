@@ -64,7 +64,7 @@ def embed_and_store(chunks_jsonl_path: str, chroma_db_path: str) -> None:
         # Create unique ID from source and chunk index
         metadata = chunk.get('metadata', {})
         source = metadata.get('source', chunk.get('source', 'unknown_source'))
-        idx = metadata.get('chunk_index', chunk.get('chunk_index', i))
+        idx = metadata.get('chunk_index', chunk.get('chunk_index', 0))
         chunk_id = f"{source}_{idx}"
         ids.append(chunk_id)
         
