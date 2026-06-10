@@ -1,0 +1,5 @@
+Community Wiki - Engineering Faculty Breakdown:
+This page ranks core department faculty by responsiveness, exam fairness, and lecture clarity to help students build their schedules.
+
+Professor Vance (ECE): S-Tier. Incredibly responsive to Discord questions at 2 AM. His exams match the homework sets completely. However, notes that his lectures are mandatory for passing because he runs pop-quizzes at the start of class that comprise 10% of the final grade.
+Professor Geller (ME): A-Tier. Great lecture clarity, but his workload is severe. Exams are brutal but fair; he gives a massive partial credit curve if he sees you mapping out the right engineering principles.

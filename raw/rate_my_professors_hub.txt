@@ -1,0 +1,3 @@
+Professor Jones (CHEM 103): "Awesome lectures, straight from the slides. His exams are 100% multiple choice and very fair if you memorize the decks. Sentiment: Accessible, clear, popular choice."
+Professor Williams (CHEM 103): "Brilliant professor but a tough grader. Expect conceptual short-answer questions on exams that force you to thoroughly understand the chemical mechanisms. Sentiment: Respected, tough, heavy reader."
+Professor Smith (MATH 242): "Avoid at all costs. Shifted exam formats completely out of nowhere this term. He used to be an easy A, but now he's throwing pure theoretical proofs at us. Sentiment: Harsh grader, unpredictable, do not take."

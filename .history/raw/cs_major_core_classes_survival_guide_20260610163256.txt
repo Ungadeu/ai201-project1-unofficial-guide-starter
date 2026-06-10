@@ -1,0 +1,4 @@
+Submitted by u/CS_Survivor_99:
+If you are entering your sophomore or junior year, brace yourself for the upper-level CS core classes. The estimated weekly workload for classes like Systems Programming and Algorithms is easily 12 to 15 hours, mostly spent staring at compiler errors or debugging segmentation faults in the lab. 
+
+The coding projects are heavily weighted—often accounting for 50% of your final grade. A lot of people ask if you can skip lectures since the slide decks are posted online. The short answer is absolutely not. Professors frequently live-code exam-relevant algorithms right on the whiteboard that are completely missing from the official slides. If you don't show up to take notes on those edge cases, you will bomb the coding practicals. Start the projects the day they drop on Tuesday; if you wait until the weekend, you're toast.
